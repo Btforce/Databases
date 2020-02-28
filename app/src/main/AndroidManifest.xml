@@ -12,7 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".DisplayFriendsActivity"></activity>
+        <activity android:name=".FriendDetailActivity"></activity>
+        <activity android:name=".FriendItemActivity" />
+        <activity android:name=".DisplayFriendListActivity" />
         <activity
             android:name=".RegistrationActivity"
             android:parentActivityName=".LoginActivity" />

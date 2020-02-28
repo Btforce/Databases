@@ -91,8 +91,11 @@ public class LoginActivity extends AppCompatActivity {
                 public void handleResponse(BackendlessUser user) {
                     // user has been logged in
 
-                    Toast.makeText(LoginActivity.this,
-                            "Welcome " + user.getProperty("username"), Toast.LENGTH_SHORT).show();
+                    // change screens to the friend list activity using an intent
+
+                    Intent loggedInIntent = new Intent(LoginActivity.this, DisplayFriendListActivity.class);
+                    startActivity(loggedInIntent);
+                    finish(); // so it doesn't go back to the login page again
                 }
 
                 public void handleFault(BackendlessFault fault) {

@@ -4,11 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-public class DisplayFriendsActivity extends AppCompatActivity {
+public class FriendItemActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display_friends2);
+        setContentView(R.layout.activity_friend_item);
+
+
+
     }
 }
