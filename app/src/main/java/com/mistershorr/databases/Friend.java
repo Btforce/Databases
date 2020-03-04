@@ -71,6 +71,12 @@ public class Friend implements Parcelable {
 
     public String getObjectId(){return objectId;}
 
+    public void setObjectId(String objectId){this.objectId = objectId;}
+
+    public void setOwnerId(String ownerId){this.ownerId = ownerId;}
+
+
+
     // MUST HAVE DEFAULT, NO PARAM CONSTRUCTOR
 
     // MUST HAVE GETTERS AND SETTERS

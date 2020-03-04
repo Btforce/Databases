@@ -16,6 +16,7 @@ import com.backendless.UserService;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ public class DisplayFriendListActivity extends AppCompatActivity {
     private TextView textViewClumsiness;
     private TextView textViewMoneyOwed;
     private ListView listView;
+    private FloatingActionButton floatingActionButton;
 
     public static final String EXTRA_FRIEND = "friend";
 
@@ -39,13 +41,29 @@ public class DisplayFriendListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_display_friend_list);
 
         wireWidgets();
+        setListeners();
 
         //search only for Friends that have ownerIds that match the user's objectId
         loadDataFromBackendless();
     }
 
+    private void setListeners() {
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent newFriendIntent = new Intent(DisplayFriendListActivity.this, FriendDetailActivity.class);
+                startActivity(newFriendIntent);
+
+            }
+        });
+
+    }
+
 
     private void loadDataFromBackendless(){
+
         String userId = Backendless.UserService.CurrentUser().getObjectId();
 
         // ownerId = ''
@@ -64,12 +82,6 @@ public class DisplayFriendListActivity extends AppCompatActivity {
                 // all Contact instances have been found
 
                 Log.d("LOADED FRIENDS", "handleResponse: " + foundFriend.toString());
-
-                // todo make a custom adapter to display the friends and load the list that
-                // is retrieved into the adapter
-
-                //todo make friend parcelable
-                //todo when a friend is clicked, it opens the detail activity and loads the info
 
 
                 FriendAdapter friendAdapter = new FriendAdapter(foundFriend);
@@ -107,6 +119,7 @@ public class DisplayFriendListActivity extends AppCompatActivity {
     private void wireWidgets() {
 
         listView = findViewById(R.id.ListView_displayFriendList_listView);
+        floatingActionButton = findViewById(R.id.floatingActionButton_displayFriendList);
 
     }
 

@@ -12,6 +12,10 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.backendless.Backendless;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+
 public class FriendDetailActivity extends AppCompatActivity {
 
     private EditText editTextName;
@@ -34,7 +38,7 @@ public class FriendDetailActivity extends AppCompatActivity {
 
         Intent lastIntent = getIntent();
 
-        Friend friend = lastIntent.getParcelableExtra(DisplayFriendListActivity.EXTRA_FRIEND);
+        friend = lastIntent.getParcelableExtra(DisplayFriendListActivity.EXTRA_FRIEND);
 
         wireWidgets();
         setListeners();
@@ -52,14 +56,13 @@ public class FriendDetailActivity extends AppCompatActivity {
             textViewGymFreq.setText("Gym Frequency");
             textViewMoneyOwed.setText("Money Owed");
             textViewTrust.setText("Trust");
-
-
-
         }
         else{
-            friend = new Friend();
-            //set the ownerId here to the current user Id
+            Friend friend = new Friend();
+
+
         }
+
 
 
 
@@ -90,6 +93,29 @@ public class FriendDetailActivity extends AppCompatActivity {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
+
+                Backendless.Persistence.save( friend, new AsyncCallback<Friend>() {
+                    public void handleResponse( Friend response )
+                    {
+
+                        //set the values of friend to the new values that are changed
+
+                        friend.setClumsiness(seekBarClumsiness.getProgress());
+                        friend.setAwesome(switchAwesome.isChecked());
+                        friend.setGymFrequency((double)(seekBarGymFreq.getProgress())/2);
+                        friend.setTrustworthiness(ratingBarTrust.getProgress()*2);
+                        friend.setMoneyOwed(Double.valueOf(String.valueOf(editTextMoneyOwed.getText())));
+
+
+                    }
+
+                    public void handleFault( BackendlessFault fault )
+                    {
+                        // an error has occurred, the error code can be retrieved with fault.getCode()
+                    }
+                });
 
             }
         });

@@ -14,4 +14,5 @@ public class FriendItemActivity extends AppCompatActivity {
 
 
     }
+
 }
