@@ -3,11 +3,11 @@ package com.mistershorr.databases;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Friend implements Parcelable {
+public class Friend implements Parcelable, Comparable<Friend> {
 
     private int clumsiness;
     private double gymFrequency;
-    private boolean isAwesome;
+    private boolean awesome;
     private double moneyOwed;
     private String name;
     private int trustworthiness;
@@ -44,11 +44,11 @@ public class Friend implements Parcelable {
     }
 
     public boolean isAwesome() {
-        return isAwesome;
+        return awesome;
     }
 
     public void setAwesome(boolean awesome) {
-        isAwesome = awesome;
+        this.awesome = awesome;
     }
 
     public double getGymFrequency() {
@@ -75,7 +75,12 @@ public class Friend implements Parcelable {
 
     public void setOwnerId(String ownerId){this.ownerId = ownerId;}
 
+    @Override
+    public int compareTo(Friend friend) {
 
+        return (int)(this.getMoneyOwed() - friend.getMoneyOwed());
+
+    }
 
     // MUST HAVE DEFAULT, NO PARAM CONSTRUCTOR
 
@@ -96,7 +101,7 @@ public class Friend implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.clumsiness);
         dest.writeDouble(this.gymFrequency);
-        dest.writeByte(this.isAwesome ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.awesome ? (byte) 1 : (byte) 0);
         dest.writeDouble(this.moneyOwed);
         dest.writeString(this.name);
         dest.writeInt(this.trustworthiness);
@@ -107,7 +112,7 @@ public class Friend implements Parcelable {
     protected Friend(Parcel in) {
         this.clumsiness = in.readInt();
         this.gymFrequency = in.readDouble();
-        this.isAwesome = in.readByte() != 0;
+        this.awesome = in.readByte() != 0;
         this.moneyOwed = in.readDouble();
         this.name = in.readString();
         this.trustworthiness = in.readInt();

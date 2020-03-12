@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     Intent loggedInIntent = new Intent(LoginActivity.this, DisplayFriendListActivity.class);
                     startActivity(loggedInIntent);
-                    finish(); // so it doesn't go back to the login page again
+                     finish();// so it doesn't go back to the login page again
                 }
 
                 public void handleFault(BackendlessFault fault) {

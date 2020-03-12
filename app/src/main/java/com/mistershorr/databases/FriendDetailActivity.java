@@ -1,9 +1,13 @@
 package com.mistershorr.databases;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +15,7 @@ import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
@@ -31,6 +36,7 @@ public class FriendDetailActivity extends AppCompatActivity {
     private Button buttonSave;
     private Friend friend;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,32 +47,104 @@ public class FriendDetailActivity extends AppCompatActivity {
         friend = lastIntent.getParcelableExtra(DisplayFriendListActivity.EXTRA_FRIEND);
 
         wireWidgets();
-        setListeners();
 
         if(friend != null){
             //set values
             editTextName.setText(friend.getName());
-            editTextMoneyOwed.setText(String.valueOf(friend.getMoneyOwed()));
-            ratingBarTrust.setProgress(friend.getTrustworthiness());
-            switchAwesome.setChecked(friend.isAwesome());
             seekBarClumsiness.setProgress(friend.getClumsiness());
-            seekBarGymFreq.setProgress((int) (friend.getGymFrequency()*2));
-            switchAwesome.setText("Awesome");
-            textViewClumsiness.setText("Clumsiness");
-            textViewGymFreq.setText("Gym Frequency");
-            textViewMoneyOwed.setText("Money Owed");
-            textViewTrust.setText("Trust");
+            switchAwesome.setChecked(friend.isAwesome());
+            seekBarGymFreq.setProgress( (int) (friend.getGymFrequency()) * 2);
+            ratingBarTrust.setProgress(friend.getTrustworthiness());
+            editTextMoneyOwed.setText(String.valueOf(friend.getMoneyOwed()));
+            setListeners();
         }
         else{
-            Friend friend = new Friend();
-
-
+            buttonSave.setText("Create");
+            addNewFriend();
         }
 
 
 
 
 
+
+
+
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.option_menu_friend_detail, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.optionMenu_optionMenuFriendDetail_logOut:
+
+                Backendless.UserService.logout( new AsyncCallback<Void>()
+                {
+                    public void handleResponse( Void response )
+                    {
+                        // user has been logged out.
+                        Intent intentLogInActivity = new Intent(FriendDetailActivity.this, LoginActivity.class);
+                        startActivity(intentLogInActivity);
+                        finish();
+                    }
+
+                    public void handleFault( BackendlessFault fault )
+                    {
+                        // something went wrong and logout failed, to get the error code call fault.getCode()
+                    }
+                });
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void addNewFriend() {
+
+        buttonSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                Friend friend = new Friend();
+                friend.setOwnerId(Backendless.UserService.CurrentUser().getObjectId());
+
+                friend.setClumsiness(seekBarClumsiness.getProgress());
+                friend.setAwesome(switchAwesome.isChecked());
+                friend.setGymFrequency((double) (seekBarGymFreq.getProgress()) / 2);
+                friend.setTrustworthiness(ratingBarTrust.getProgress());
+                friend.setMoneyOwed(Double.valueOf(String.valueOf(editTextMoneyOwed.getText())));
+                friend.setName(String.valueOf(editTextName.getText()));
+
+
+
+                Backendless.Persistence.save( friend, new AsyncCallback<Friend>() {
+                    public void handleResponse( Friend response )
+                    {
+
+                        //set the values of friend to the new values that are changed
+                        finish();
+
+
+
+                    }
+
+                    public void handleFault( BackendlessFault fault )
+                    {
+                        // an error has occurred, the error code can be retrieved with fault.getCode()
+                    }
+                });
+
+            }
+        });
 
 
     }
@@ -84,42 +162,31 @@ public class FriendDetailActivity extends AppCompatActivity {
         editTextMoneyOwed = findViewById(R.id.editText_friendDetail_moneyOwed);
         switchAwesome = findViewById(R.id.switch_friendDetail_isAwesome);
         buttonSave = findViewById(R.id.button_friendDetail_save);
-
-
     }
 
     private void setListeners() {
+        friend.setName(String.valueOf(editTextName.getText()));
+        friend.setClumsiness(seekBarClumsiness.getProgress());
+        friend.setAwesome(switchAwesome.isChecked());
+        friend.setGymFrequency((double) (seekBarGymFreq.getProgress()) / 2);
+        friend.setTrustworthiness(ratingBarTrust.getProgress());
+        friend.setMoneyOwed(Double.valueOf(String.valueOf(editTextMoneyOwed.getText())));
 
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                friend.setOwnerId(Backendless.UserService.CurrentUser().getObjectId());
 
+                friend.setClumsiness(seekBarClumsiness.getProgress());
+                friend.setAwesome(switchAwesome.isChecked());
+                friend.setGymFrequency((double) (seekBarGymFreq.getProgress()) / 2);
+                friend.setTrustworthiness(ratingBarTrust.getProgress());
+                friend.setMoneyOwed(Double.valueOf(String.valueOf(editTextMoneyOwed.getText())));
+                friend.setName(String.valueOf(editTextName.getText()));
 
-
-                Backendless.Persistence.save( friend, new AsyncCallback<Friend>() {
-                    public void handleResponse( Friend response )
-                    {
-
-                        //set the values of friend to the new values that are changed
-
-                        friend.setClumsiness(seekBarClumsiness.getProgress());
-                        friend.setAwesome(switchAwesome.isChecked());
-                        friend.setGymFrequency((double)(seekBarGymFreq.getProgress())/2);
-                        friend.setTrustworthiness(ratingBarTrust.getProgress()*2);
-                        friend.setMoneyOwed(Double.valueOf(String.valueOf(editTextMoneyOwed.getText())));
-
-
-                    }
-
-                    public void handleFault( BackendlessFault fault )
-                    {
-                        // an error has occurred, the error code can be retrieved with fault.getCode()
-                    }
-                });
-
+                finish();
             }
         });
-
     }
 
 }

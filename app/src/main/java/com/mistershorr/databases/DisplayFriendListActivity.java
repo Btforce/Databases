@@ -1,18 +1,20 @@
 package com.mistershorr.databases;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.DownloadManager;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import com.backendless.Backendless;
-import com.backendless.UserService;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
@@ -22,7 +24,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class DisplayFriendListActivity extends AppCompatActivity {
@@ -32,8 +37,47 @@ public class DisplayFriendListActivity extends AppCompatActivity {
     private TextView textViewMoneyOwed;
     private ListView listView;
     private FloatingActionButton floatingActionButton;
+    private FriendAdapter friendAdapter;
+    private Comparator<Friend> comparatorName;
+
 
     public static final String EXTRA_FRIEND = "friend";
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.ContextMenu_contextMenu_deleteFriend:
+
+                deleteFriend(info.position);
+
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+
+
+    private void deleteFriend(int itemId) {
+
+        //Backendless.Persistence.of( Friend.class ).remove(friendAdapter.getItem(itemId));
+
+        Backendless.Persistence.of( Friend.class ).remove(friendAdapter.getItem(itemId), new AsyncCallback<Long>() {
+            @Override
+            public void handleResponse(Long response) {
+                loadDataFromBackendless();
+                Toast.makeText(DisplayFriendListActivity.this, "Deleted Friend", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+            }
+        });
+
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +87,18 @@ public class DisplayFriendListActivity extends AppCompatActivity {
         wireWidgets();
         setListeners();
 
+        comparatorName = new Comparator<Friend>() {
+            @Override
+            public int compare(Friend friend, Friend t1) {
+                return friend.getName().compareTo(t1.getName());
+            }
+        };
         //search only for Friends that have ownerIds that match the user's objectId
         loadDataFromBackendless();
+
+        registerForContextMenu(listView);
+
+
     }
 
     private void setListeners() {
@@ -61,6 +115,57 @@ public class DisplayFriendListActivity extends AppCompatActivity {
 
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.optionMenu_optionMenu_sortByAlphatbetical:
+                sortByAlphabetical();
+                friendAdapter.notifyDataSetChanged();
+                return true;
+
+            case R.id.optionMenu_optionMenu_sortByMoneyOwed:
+                sortByMoneyOwed();
+                friendAdapter.notifyDataSetChanged();
+                return true;
+
+            case R.id.optionMenu_optionMenu_logOut:
+                Backendless.UserService.logout( new AsyncCallback<Void>()
+                {
+                    public void handleResponse( Void response )
+                    {
+                        // user has been logged out.
+                        Intent intentLogInActivity = new Intent(DisplayFriendListActivity.this, LoginActivity.class);
+                        startActivity(intentLogInActivity);
+                        finish();
+                    }
+
+                    public void handleFault( BackendlessFault fault )
+                    {
+                        // something went wrong and logout failed, to get the error code call fault.getCode()
+                    }
+                });
+
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void sortByMoneyOwed() {
+        Collections.sort(friendAdapter.getFriendList());
+    }
+
+    private void sortByAlphabetical() {
+        Collections.sort(friendAdapter.getFriendList(), comparatorName);
+    }
 
     private void loadDataFromBackendless(){
 
@@ -84,7 +189,7 @@ public class DisplayFriendListActivity extends AppCompatActivity {
                 Log.d("LOADED FRIENDS", "handleResponse: " + foundFriend.toString());
 
 
-                FriendAdapter friendAdapter = new FriendAdapter(foundFriend);
+                friendAdapter = new FriendAdapter(foundFriend);
                 listView.setAdapter(friendAdapter);
 
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -123,6 +228,15 @@ public class DisplayFriendListActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu, menu);
+
+    }
+
     private class FriendAdapter extends ArrayAdapter<Friend>{
 
         private List<Friend> friendList;
@@ -131,6 +245,10 @@ public class DisplayFriendListActivity extends AppCompatActivity {
         public FriendAdapter(List<Friend> friendList){
             super(DisplayFriendListActivity.this,-1,friendList);
             this.friendList = friendList;
+        }
+
+        public List<Friend> getFriendList() {
+            return friendList;
         }
 
         @Override
